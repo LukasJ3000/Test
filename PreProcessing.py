@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 # -----------------------------
 # Helper Functions
 # -----------------------------
-def drop_solitary_infinity_rows(df, inf_value=9999999999.9):
+
+def drop_solitary_infinity_rows(df, inf_value=9999999999.9): #Ergibt eigentlich keinen sinn, weil inf werte in der CSV als merkwüridge sonderzeichen auftauchen bzw. Nan werden #inf_value definieren oder die funktion rausschmeißen
     """
     For each column in the DataFrame, drop any row that contains a solitary infinity value (inf_value),
     i.e. the value equals inf_value and both the previous and next rows are not inf_value.
@@ -55,7 +56,7 @@ def calculate_Fs(time_vector):
     return 1.0 / avg_interval
 
 
-def merge3(vec1, vec2, ovrlpSlope):
+def merge3(vec1, vec2, ovrlpSlope): # hier gibt es irgendwie merge1, merge2 und merge3?
     """
     Merge two vectors by overlapping them (merging vec2 into vec1) while ensuring
     that the slope (direction) at the merging point is the same in both vectors.
@@ -86,6 +87,8 @@ def merge3(vec1, vec2, ovrlpSlope):
         sigN = 10000
     else:
         sigN = 100000
+
+    #Scaling für resistance überprüfen!
 
     # Compute rounded/truncated versions of the vectors.
     # If ovrlpSlope is zero, take the whole vector; otherwise, exclude the last ovrlpSlope elements.
@@ -339,7 +342,7 @@ def get_order_from_filename(file):
     except:
         return 0
 
-def movmedian(x, win=50):
+def movmedian(x, win): #convolve vs rolling... besser wir haben dann nur eine funktion
     """
     MATLAB smoothdata(...,'movmedian', win) equivalent for 1D arrays.
     Uses pandas rolling median with center=True.
@@ -350,7 +353,7 @@ def movmedian(x, win=50):
     y = s.rolling(window=win, center=True, min_periods=1).median().to_numpy()
     return y
 
-def first_intersect_info(vec1, vec2, sigN=100.0):
+def first_intersect_info(vec1, vec2, sigN=100.0): #Warum wird das gebraucht? Ist das nicht in den merge 1, 2, 3 schon drin?
     """
     Replicates the MATLAB 'intersect' rounding logic:
       rvec1 = floor(vec1*sigN); rvec2 = floor(vec2*sigN);
