@@ -63,7 +63,7 @@ def calculate_resistance(voltage, current):
     return res if res.ndim == 1 else res[:, 0]
 
 
-def calculate_Fs(timely):
+def calculate_Fs(timely): #die Funktion ist auch im preprocessing. Kann da dann glaube ich raus...
     """
     Calculate sampling frequency for FFT power spectrum.
     Raises a ValueError if the average time interval is NaN or zero.
@@ -94,12 +94,12 @@ def fftit(df_array, Fs, lbFreq, ubFreq):
     return P1, f, FundFreq
 
 
-def gaussian(x, amp, mean, stddev):
+def gaussian(x, amp, mean, stddev): 
     """Gaussian function for curve fitting."""
     return amp * np.exp(-((x - mean) ** 2) / (2 * stddev ** 2))
 
 
-def gaussian_fixed_mean(x, amp, stddev, mean_fixed):
+def gaussian_fixed_mean(x, amp, stddev, mean_fixed): #glaube die kann auhc raus. gaussian reicht
     """Gaussian function with fixed mean."""
     return amp * np.exp(-((x - mean_fixed) ** 2) / (2 * stddev ** 2))
 
@@ -111,7 +111,7 @@ def normalize_array(arr):
     return (arr - min_val) / (max_val - min_val) if max_val > min_val else np.zeros_like(arr)
 
 
-def moving_average(data, window_size):
+def moving_average(data, window_size): #Die funktion gibt es als "rolling" im preprocessing
     """Compute the moving average of a 1D NumPy array,
     keeping the same size by padding with the median value."""
     if window_size < 1:
@@ -135,7 +135,7 @@ def moving_average(data, window_size):
     return ma
 
 
-def replace_outliers_with_median(data, m=3.0):
+def replace_outliers_with_median(data, m=3.0): #die sollte rausgeschmissen werden...
     """
     Replace outliers in a 1D NumPy array with the median.
     Outliers are defined as points deviating more than m times the median absolute deviation.
@@ -150,12 +150,12 @@ def replace_outliers_with_median(data, m=3.0):
     return data
 
 
-def smooth_data(data, window_size=5):
+def smooth_data(data, window_size=5): # wie oben
     """Smooth a 1D NumPy array using a simple moving average filter."""
     return np.convolve(data, np.ones(window_size) / window_size, mode='same')
 
 
-def drop_solitary_infinity_rows(df, inf_value=9999999999.9):
+def drop_solitary_infinity_rows(df, inf_value=9999999999.9): #gehen durch das droppen irgendwie informationen verloren? Vectorlength und eventuell unstetigkeiten in den Daten?
     """
     For each column in the DataFrame, drop any row that contains a solitary infinity value (inf_value),
     meaning that the value equals inf_value and both the previous and next rows are not inf_value.
@@ -434,16 +434,15 @@ def process_csv_file(source_csv_path, target_csv_dir, target_data_path, target_p
         # Read CSV data starting from Row 4.
         df = pd.read_csv(source_csv_path, sep=';')
 
-        resistance_col = df.columns[1]
+        resistance_col = df.columns[1] #wurde resistance im preprocessing berechnet? Die funktion ist hier auch definiert aber wird anscheinend nicht gecallt. Vielleicht ist bei der Berechnung des widerstands was schief?! Vielleicht werden da die falschen spalten geteilt
         time_col = df.columns[0]
 
         resistance = df[resistance_col].values
         # --- Pre-processing on Resistance Signal ---
-        resistance = replace_outliers_with_median(resistance, m=3.0)
+        #resistance = replace_outliers_with_median(resistance, m=3.0) # denke das sollte raus 
         #print("SMOPOTH")
-        resistance = smooth_data(resistance, window_size=5)
-        window = get_window('hann', len(resistance))
-        windowed_resistance = resistance * window
+        resistance = smooth_data(resistance, window_size=50)
+
         # Update resistance column.
         resistance_col = "Resistance_(Ohms)"
         df[resistance_col] = resistance
@@ -477,7 +476,7 @@ def process_csv_file(source_csv_path, target_csv_dir, target_data_path, target_p
         Fs = calculate_Fs(df[time_col].values)
         print("Sampling Rate", Fs)
         # Perform FFT analysis on the pre-processed (windowed) resistance signal.
-        power_values, fft_bins, _ = fftit(windowed_resistance, Fs, 100, 3000)#3000
+        power_values, fft_bins, _ = fftit(resistance, Fs, 100, 3000)#3000
 
         norm_power_values = normalize_array(power_values)
         window_size = 5
